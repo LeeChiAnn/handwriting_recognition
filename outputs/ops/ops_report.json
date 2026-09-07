@@ -1,9 +1,9 @@
 {
   "meta": {
     "tool": "data_ops.py 数据运维巡检",
-    "generated_at": "2026-09-07 21:45:57",
+    "generated_at": "2026-09-07 21:59:37",
     "project_root": "/Volumes/LCA_SSD/课程/大数据综合实训/handwriting_recognition",
-    "run_name_filter": "(全部 run)",
+    "run_name_filter": "全部 run（logs/ 下所有子目录）",
     "log_dir": "/Volumes/LCA_SSD/课程/大数据综合实训/handwriting_recognition/logs",
     "data_dir": "/Volumes/LCA_SSD/课程/大数据综合实训/handwriting_recognition/data",
     "output_dir": "/Volumes/LCA_SSD/课程/大数据综合实训/handwriting_recognition/outputs",
@@ -244,9 +244,9 @@
       "outputs_examples": 0,
       "outputs_custom": 0,
       "inputs": 286,
-      "ops": 184020
+      "ops": 184004
     },
-    "total_bytes": 11780308,
+    "total_bytes": 11780292,
     "by_cat": {
       "weights": 0,
       "logs": 904,

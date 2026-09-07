@@ -1,6 +1,6 @@
 # 数据运维巡检报告
 
-- 生成时间：2026-09-07 21:45:57
+- 生成时间：2026-09-07 21:59:37
 - 巡检范围：`/Volumes/LCA_SSD/课程/大数据综合实训/handwriting_recognition/logs` / `/Volumes/LCA_SSD/课程/大数据综合实训/handwriting_recognition/data` / `/Volumes/LCA_SSD/课程/大数据综合实训/handwriting_recognition/outputs`
 - **健康度：70.2 / 100　等级 C** —— 及格：有明显缺项，交付前需整改
 - run 数：1　告警：ERROR 3 / WARN 6 / INFO 1
@@ -28,7 +28,7 @@
 
 | 区域 | 占用 | 说明 |
 |---|---|---|
-| `data` | 11.1 MB | MNIST 原始数据集 |
+| `data` | 11.1 MB | MNIST 原始数据集（实际统计自 `/Users/leechiann/.cache/paddle/dataset/mnist`，原因见告警 S10） |
 | `ops` | 179.7 KB | 巡检自身报告与看板 |
 | `logs` | 1.2 KB | 训练产物（日志/权重/记录/曲线） |
 | `inputs` | 286 B | 用户自提原图（新数据入口） |
@@ -69,6 +69,7 @@
 
 - 输入目录：`/Volumes/LCA_SSD/课程/大数据综合实训/handwriting_recognition/inputs`（存在），现有 PNG 3 张，因格式被排除 0 个
 - 成果：`/Volumes/LCA_SSD/课程/大数据综合实训/handwriting_recognition/outputs/custom/custom_results.json`（尚未生成）
+
 ## 7. 告警清单（按级别）
 
 | 级别 | 编号 | 维度 | 对象 | 问题 | 建议动作 |

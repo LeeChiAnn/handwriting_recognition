@@ -789,7 +789,12 @@ def write_markdown_report(rep, path):
                  "outputs_examples": "测试集示例输入图 + 识别拼图", "outputs_custom": "用户自提图的预处理结果",
                  "inputs": "用户自提原图（新数据入口）", "ops": "巡检自身报告与看板"}
     for name, val in sorted(rep["storage"]["areas"].items(), key=lambda kv: -kv[1]):
-        L.append(f"| `{name}` | {human_bytes(val)} | {area_desc.get(name, '')} |")
+        desc = area_desc.get(name, "")
+        real_root = rep["source"].get("root")
+        if name == "data" and real_root and \
+                os.path.abspath(real_root) != os.path.abspath(rep["meta"]["data_dir"]):
+            desc += f"（实际统计自 `{real_root}`，原因见告警 S10）"
+        L.append(f"| `{name}` | {human_bytes(val)} | {desc} |")
     L += [f"| **合计** | **{human_bytes(rep['storage']['total_bytes'])}** | |",
           "", "### 3.2 按文件类型", "", "| 类别 | 占用 |", "|---|---|"]
     cat_cn = {"weights": "模型权重(.pdparams)", "logs": "日志(.log)", "images": "图片(.png)",
@@ -830,7 +835,7 @@ def write_markdown_report(rep, path):
     L += ["", "## 6. 用户自提输入区（新数据接入体检）", "",
           f"- 输入目录：`{cust.get('image_dir')}`（{'存在' if cust.get('dir_exists') else '不存在'}），"
           f"现有 PNG {len(cust.get('pngs') or [])} 张，因格式被排除 {len(cust.get('wrong_ext') or [])} 个",
-          f"- 成果：`{cust.get('results_path')}`（{'已生成' if cust.get('exists') else '尚未生成'}）"]
+          f"- 成果：`{cust.get('results_path')}`（{'已生成' if cust.get('exists') else '尚未生成'}）", ""]
     if cust.get("exists"):
         L += [f"- 引用 run：`{cust.get('run_name')}`　模型结构：{cust.get('model_type')}　"
               f"生成于 {cust.get('generated_at')}",

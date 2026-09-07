@@ -1,4 +1,0 @@
-[2026-09-07 21:48:11] INFO | ==== 启动训练 ====
-[2026-09-07 21:48:11] INFO | 参数：{"data_dir": "./data", "batch_size": 128, "image_dir": "./inputs", "model_type": "mlp", "learning_rate": 0.01, "epochs": 2, "optimizer": "adam", "hidden_size": 256, "dropout": 0.2, "log_dir": "./logs", "output_dir": "./outputs", "run_name": "speed_mlp", "num_show": 9, "seed": 42, "ops_dir": "./outputs/ops", "retention_days": 14, "refresh_baseline": false}
-[2026-09-07 21:48:13] INFO | 数据集加载记录：{"dataset": "MNIST", "task": "手写数字识别 (0-9)", "source": "Paddle 内置自动下载（首次运行从百度CDN下载并缓存）", "cache_dir": "./data", "train_samples": 60000, "test_samples": 10000, "num_classes": 10, "input_shape": [1, 28, 28], "batch_size": 128, "transform": "ToTensor + Normalize(mean=0.1307, std=0.3081)"}
-[2026-09-07 21:48:13] INFO | 模型结构=mlp，参数量=235146

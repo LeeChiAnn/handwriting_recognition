@@ -184,7 +184,8 @@ def plot_ops_dashboard(report, save_path):
         ax1.set_yticklabels(names, fontsize=8)
         ax1.set_xlabel("Size per run (%s)" % unit)
         ax1.set_title("1. Storage footprint by file category")
-        ax1.legend(fontsize=8, ncol=5, loc="lower right")
+        ax1.legend(fontsize=8, ncol=5, frameon=False, loc="upper center",
+                   bbox_to_anchor=(0.5, -0.22))
         ax1.grid(True, axis="x", alpha=0.3)
 
         # ---------- ② 资产完整性矩阵
@@ -210,7 +211,7 @@ def plot_ops_dashboard(report, save_path):
         for i, r in enumerate(runs):
             f = r.get("final") or {}
             if not f:
-                ax3.text(i, 0.04, "no\nhistory", ha="center", fontsize=7, color="#c62f38")
+                ax3.text(i, 0.55, "no\nhistory", ha="center", fontsize=7, color="#c62f38")
                 continue
             ax3.annotate("gap %+.3f" % f["gap"], (i, max(f["train_acc"], f["val_acc"]) + 0.015),
                          ha="center", fontsize=7,
@@ -225,7 +226,7 @@ def plot_ops_dashboard(report, save_path):
         ax3.set_ylim(0, 1.12)
         ax3.set_ylabel("Accuracy")
         ax3.set_title("3. Final accuracy by run (gap = overfitting signal)")
-        ax3.legend(fontsize=8, loc="lower right")
+        ax3.legend(fontsize=8, loc="upper left")
         ax3.grid(True, axis="y", alpha=0.3)
 
         # ---------- ④ 五维健康度雷达
@@ -249,7 +250,7 @@ def plot_ops_dashboard(report, save_path):
                   % (report["score"], report["grade"]), fontsize=11, pad=18)
 
     # 极坐标子图与 tight_layout 不兼容（会报 Tight layout not applied），直接手动留白
-    fig.subplots_adjust(left=0.09, right=0.995, top=0.90, bottom=0.075, wspace=0.42, hspace=0.52)
+    fig.subplots_adjust(left=0.09, right=0.995, top=0.90, bottom=0.13, wspace=0.42, hspace=0.52)
     os.makedirs(os.path.dirname(save_path) or ".", exist_ok=True)
     fig.savefig(save_path, dpi=130)
     plt.close(fig)
