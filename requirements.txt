@@ -1,0 +1,6 @@
+# 百度 AI Studio（CPU 环境）已预装 paddlepaddle，无需额外安装。
+# 以下依赖用于本地运行或补全绘图/图片库；在 AI Studio 一般也已具备。
+paddlepaddle==2.6.0
+matplotlib>=3.5
+Pillow>=9.0
+numpy>=1.21

@@ -1,0 +1,21 @@
+# 虚拟环境与字节码：.venv 里有 177MB 的 paddle/base/libpaddle.so，
+# 超过 GitHub 单文件 100MB 硬上限，推上去会被直接拒收，因此必须忽略。
+# 换机器重建环境：python -m venv .venv && .venv/bin/pip install -r requirements.txt
+.venv/
+__pycache__/
+*.py[cod]
+*.egg-info/
+
+# MNIST 原始数据（约 11MB，首次运行由 Paddle 自动下载；教师端可用 --mode ops 校验其完整性）
+data/
+
+# 编辑器 / 系统杂项
+.DS_Store
+.ipynb_checkpoints/
+.idea/
+.vscode/
+
+# 说明：logs/ 与 outputs/ 已按课程成果一并纳入版本管理。
+# 若日后想瘦身仓库，取消下面两行注释即可（会停止跟踪运行产物）：
+# logs/
+# outputs/

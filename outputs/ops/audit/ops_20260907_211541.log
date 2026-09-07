@@ -1,0 +1,16 @@
+[2026-09-07 21:15:41] INFO | ==== 数据运维巡检开始 ====
+[2026-09-07 21:15:41] INFO | 扫描范围：logs=/Volumes/LCA_SSD/课程/大数据综合实训/handwriting_recognition/logs  data=/Volumes/LCA_SSD/课程/大数据综合实训/handwriting_recognition/data  outputs=/Volumes/LCA_SSD/课程/大数据综合实训/handwriting_recognition/outputs
+[2026-09-07 21:15:41] INFO | 巡检完成：健康度 73.2（C）｜ERROR=5 WARN=2 INFO=0｜run 数=0
+[2026-09-07 21:15:51] ERROR | [R2] /Volumes/LCA_SSD/课程/大数据综合实训/handwriting_recognition/logs | logs/ 下没有任何 run 产物，巡检无对象
+[2026-09-07 21:15:51] ERROR | [S1] train-images-idx3-ubyte.gz | 数据集文件缺失：/Volumes/LCA_SSD/课程/大数据综合实训/handwriting_recognition/data/train-images-idx3-ubyte.gz
+[2026-09-07 21:15:51] ERROR | [S1] train-labels-idx1-ubyte.gz | 数据集文件缺失：/Volumes/LCA_SSD/课程/大数据综合实训/handwriting_recognition/data/train-labels-idx1-ubyte.gz
+[2026-09-07 21:15:51] ERROR | [S1] t10k-images-idx3-ubyte.gz | 数据集文件缺失：/Volumes/LCA_SSD/课程/大数据综合实训/handwriting_recognition/data/t10k-images-idx3-ubyte.gz
+[2026-09-07 21:15:51] ERROR | [S1] t10k-labels-idx1-ubyte.gz | 数据集文件缺失：/Volumes/LCA_SSD/课程/大数据综合实训/handwriting_recognition/data/t10k-labels-idx1-ubyte.gz
+[2026-09-07 21:15:51] INFO | 健康度 73.2/100（C）—— 及格：有明显缺项，交付前需整改
+[2026-09-07 21:15:51] INFO | ==== 巡检成果保存位置（绝对路径）====
+[2026-09-07 21:15:51] INFO |   结构化报告 -> /Volumes/LCA_SSD/课程/大数据综合实训/handwriting_recognition/outputs/ops/ops_report.json
+[2026-09-07 21:15:51] INFO |   可读巡检报告 -> /Volumes/LCA_SSD/课程/大数据综合实训/handwriting_recognition/outputs/ops/ops_report.md
+[2026-09-07 21:15:51] INFO |   交互看板（浏览器打开） -> /Volumes/LCA_SSD/课程/大数据综合实训/handwriting_recognition/outputs/ops/dashboard.html
+[2026-09-07 21:15:51] INFO |   四联看板图 -> /Volumes/LCA_SSD/课程/大数据综合实训/handwriting_recognition/outputs/ops/dashboard.png
+[2026-09-07 21:15:51] INFO |   本次巡检日志 -> /Volumes/LCA_SSD/课程/大数据综合实训/handwriting_recognition/outputs/ops/audit/ops_20260907_211541.log
+[2026-09-07 21:15:51] INFO |   数据指纹基线 -> /Volumes/LCA_SSD/课程/大数据综合实训/handwriting_recognition/outputs/ops/data_fingerprint.json

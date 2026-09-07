@@ -1,0 +1,26 @@
+{
+  "created_at": "2026-09-07 21:45:11",
+  "root": "/Users/leechiann/.cache/paddle/dataset/mnist",
+  "files": {
+    "train-images-idx3-ubyte.gz": {
+      "md5": "f68b3c2dcbeaaa9fbdd348bbdeb94873",
+      "size": 9912422,
+      "count": 60000
+    },
+    "train-labels-idx1-ubyte.gz": {
+      "md5": "d53e105ee54ea40749a09fcbcd1e9432",
+      "size": 28881,
+      "count": 60000
+    },
+    "t10k-images-idx3-ubyte.gz": {
+      "md5": "9fb629c4189551a2d022fa330f9573f3",
+      "size": 1648877,
+      "count": 10000
+    },
+    "t10k-labels-idx1-ubyte.gz": {
+      "md5": "ec29112dd5afa0611ce80d1b7f02629c",
+      "size": 4542,
+      "count": 10000
+    }
+  }
+}

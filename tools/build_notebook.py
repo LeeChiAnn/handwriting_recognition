@@ -1,0 +1,167 @@
+"""tools/build_notebook.py —— 生成教学讲解 notebook（纯标准库，无需 nbformat）
+
+运行：python tools/build_notebook.py
+输出：手写识别教学讲解.ipynb
+"""
+
+
+import json
+import os
+
+CELLS = [
+    ("markdown", [
+        "# 手写数字识别实训项目（专科 · 深度学习入门）\n",
+        "\n",
+        "基于百度 AI Studio 经典 MNIST 手写识别项目改造，面向**专科深度学习实训课程**：\n",
+        "\n",
+        "- ✅ 参数可一键调整（学习率 / 轮数 / 网络结构），课堂演示参数效果\n",
+        "- ✅ 数据与日志自动留档（数据集记录 + 训练日志 + 曲线）\n",
+        "- ✅ 自带输入图片示例与识别结果\n",
+        "- ✅ 训练过程有损失/准确率曲线可视化\n",
+        "- ✅ 代码按功能拆成多个 `.py`，本 notebook 仅用于**讲解与演示**\n",
+        "\n",
+        "> ⚠️ 实际训练/推理请在终端运行 `.py` 文件：\n",
+        "> `python main.py --mode train ...` 与 `python main.py --mode inference ...`\n",
+        "> 本 notebook 里也用 `!python ...` 直接调用它们。\n",
+    ]),
+    ("markdown", [
+        "## 0. 环境准备\n",
+        "\n",
+        "AI Studio（CPU 环境）已预装 `paddlepaddle`，无需重装。\n",
+        "如需在本地运行，先装依赖：\n",
+        "\n",
+        "```bash\n",
+        "pip install -r requirements.txt\n",
+        "```\n",
+    ]),
+    ("code", [
+        "import paddle\n",
+        "print(\"PaddlePaddle 版本：\", paddle.__version__)\n",
+    ]),
+    ("markdown", [
+        "## 1. 可调参数模块 `config.py`\n",
+        "\n",
+        "所有\"能调着玩\"的超参数都集中在这里。课堂上改命令行参数即可看效果：\n",
+        "\n",
+        "| 参数 | 含义 | 试试看 |\n",
+        "|---|---|---|\n",
+        "| `--lr` | 学习率 | 0.01（快但抖）vs 0.0005（稳但慢） |\n",
+        "| `--epochs` | 训练轮数 | 对比 2 轮 vs 10 轮 |\n",
+        "| `--model_type` | 网络结构 | `mlp` vs `lenet` vs `cnn` |\n",
+        "| `--optimizer` | 优化器 | `sgd` vs `adam` |\n",
+        "| `--batch_size` | 批大小 | 64 vs 256 |\n",
+    ]),
+    ("code", [
+        "from config import Config\n",
+        "cfg = Config()\n",
+        "print(\"默认参数：\")\n",
+        "for k, v in cfg.to_dict().items():\n",
+        "    print(f\"  {k:14s}= {v}\")\n",
+    ]),
+    ("markdown", [
+        "## 2. 数据加载与记录 `data_utils.py`\n",
+        "\n",
+        "加载 MNIST（6万训练 / 1万测试，28×28 灰度），并生成**数据集加载记录** json 留档。\n",
+    ]),
+    ("code", [
+        "from data_utils import load_dataset, save_load_record\n",
+        "train_loader, test_loader, rec = load_dataset(cfg)\n",
+        "print(\"数据集加载记录：\")\n",
+        "print(rec)\n",
+        "save_load_record(rec, cfg.log_dir, cfg.run_name)\n",
+    ]),
+    ("markdown", [
+        "## 3. 三种网络结构 `model.py`\n",
+        "\n",
+        "切换 `model_type` 即可对比不同结构：\n",
+        "- `mlp`：全连接，最基础\n",
+        "- `lenet`：经典卷积网络\n",
+        "- `cnn`：稍深卷积，准确率更高\n",
+    ]),
+    ("code", [
+        "from model import build_model\n",
+        "model = build_model(cfg)\n",
+        "print(model)\n",
+    ]),
+    ("markdown", [
+        "## 4. 训练 + 日志 + 曲线 `train.py`\n",
+        "\n",
+        "下面直接在终端跑 `.py`（真正干活的文件）。观察日志里的 loss/acc，\n",
+        "训练结束后会在 `logs/<run_name>/` 生成 `curves.png` 和 `history.json`。\n",
+    ]),
+    ("code", [
+        "# 训练 3 轮做演示（CPU 几分钟即可）\n",
+        "!python main.py --mode train --model_type lenet --lr 0.001 --epochs 3 --run_name demo_run\n",
+    ]),
+    ("markdown", [
+        "## 5. 推理：输入图片示例 + 识别结果 `inference.py`\n",
+        "\n",
+        "加载模型，挑 9 张测试图，保存每张输入图与综合结果拼图到 `outputs/examples/`。\n",
+    ]),
+    ("code", [
+        "!python main.py --mode inference --run_name demo_run --num_show 9\n",
+    ]),
+    ("markdown", [
+        "## 6. 可视化结果\n",
+        "\n",
+        "左：训练损失/准确率曲线；右：9 张示例（绿=预测正确，红=预测错误）。\n",
+    ]),
+    ("code", [
+        "from IPython.display import Image, display\n",
+        "display(Image(filename=\"logs/demo_run/curves.png\"))\n",
+        "display(Image(filename=\"outputs/examples/predictions.png\"))\n",
+    ]),
+    ("markdown", [
+        "## 7. 课堂演示参数效果的几种玩法\n",
+        "\n",
+        "1. **学习率对比**：`--lr 0.01` 看曲线剧烈震荡；`--lr 0.0005` 看收敛变慢。\n",
+        "2. **结构对比**：`--model_type mlp` 准确率明显低于 `lenet`/`cnn`，引出\"为什么需要卷积\"。\n",
+        "3. **轮数对比**：`--epochs 2` vs `--epochs 15`，观察是否过拟合（val_acc 掉、train_acc 高）。\n",
+        "4. **优化器对比**：`--optimizer sgd` vs `adam`，看收敛速度差异。\n",
+        "\n",
+        "每次换个 `--run_name`，日志互不覆盖，方便课后复盘对比。\n",
+    ]),
+    ("code", [
+        "# 示例：用 MLP + 大学习率 跑一轮，制造\"对比组\"\n",
+        "!python main.py --mode train --model_type mlp --lr 0.01 --epochs 3 --run_name compare_mlp\n",
+    ]),
+]
+
+
+def build_cell(cell_type, source_lines):
+    src = "".join(source_lines)
+    if cell_type == "markdown":
+        return {"cell_type": "markdown", "metadata": {}, "source": src}
+    return {
+        "cell_type": "code",
+        "execution_count": None,
+        "metadata": {},
+        "outputs": [],
+        "source": src,
+    }
+
+
+def main():
+    cells = [build_cell(t, s) for t, s in CELLS]
+    notebook = {
+        "cells": cells,
+        "metadata": {
+            "kernelspec": {
+                "display_name": "Python 3",
+                "language": "python",
+                "name": "python3",
+            },
+            "language_info": {"name": "python", "version": "3.8"},
+        },
+        "nbformat": 4,
+        "nbformat_minor": 5,
+    }
+    out = os.path.join(os.path.dirname(__file__), "..", "手写识别教学讲解.ipynb")
+    out = os.path.abspath(out)
+    with open(out, "w", encoding="utf-8") as f:
+        json.dump(notebook, f, ensure_ascii=False, indent=1)
+    print(f"已生成笔记本：{out}（共 {len(cells)} 个 cell）")
+
+
+if __name__ == "__main__":
+    main()

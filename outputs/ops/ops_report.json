@@ -1,0 +1,340 @@
+{
+  "meta": {
+    "tool": "data_ops.py 数据运维巡检",
+    "generated_at": "2026-09-07 21:45:57",
+    "project_root": "/Volumes/LCA_SSD/课程/大数据综合实训/handwriting_recognition",
+    "run_name_filter": "(全部 run)",
+    "log_dir": "/Volumes/LCA_SSD/课程/大数据综合实训/handwriting_recognition/logs",
+    "data_dir": "/Volumes/LCA_SSD/课程/大数据综合实训/handwriting_recognition/data",
+    "output_dir": "/Volumes/LCA_SSD/课程/大数据综合实训/handwriting_recognition/outputs",
+    "ops_dir": "/Volumes/LCA_SSD/课程/大数据综合实训/handwriting_recognition/outputs/ops",
+    "image_dir": "/Volumes/LCA_SSD/课程/大数据综合实训/handwriting_recognition/inputs",
+    "retention_days": 14
+  },
+  "score": 70.2,
+  "grade": "C",
+  "verdict": "及格：有明显缺项，交付前需整改",
+  "dimensions": {
+    "completeness": 0.0,
+    "consistency": 100.0,
+    "traceability": 85.0,
+    "source_health": 88.0,
+    "storage_gov": 100.0
+  },
+  "summary": {
+    "runs": 1,
+    "error": 3,
+    "warn": 6,
+    "info": 1,
+    "issues": 10,
+    "best_run": null,
+    "best_val_acc": null
+  },
+  "runs": [
+    {
+      "name": "demo",
+      "path": "/Volumes/LCA_SSD/课程/大数据综合实训/handwriting_recognition/logs/demo",
+      "files": {
+        "dataset_record.json": {
+          "size": 376,
+          "mtime": "2026-09-07 21:42:14",
+          "mtime_ts": 1788788534.8528013,
+          "abs": "/Volumes/LCA_SSD/课程/大数据综合实训/handwriting_recognition/logs/demo/dataset_record.json"
+        },
+        "train_20260907_214135.log": {
+          "size": 904,
+          "mtime": "2026-09-07 21:42:14",
+          "mtime_ts": 1788788534.923967,
+          "abs": "/Volumes/LCA_SSD/课程/大数据综合实训/handwriting_recognition/logs/demo/train_20260907_214135.log"
+        }
+      },
+      "artifacts": {
+        "model": false,
+        "best_model": false,
+        "config": false,
+        "history": false,
+        "curves": false,
+        "record": true,
+        "log": true
+      },
+      "logs": [
+        "train_20260907_214135.log"
+      ],
+      "history": null,
+      "config": null,
+      "record": {
+        "dataset": "MNIST",
+        "task": "手写数字识别 (0-9)",
+        "source": "Paddle 内置自动下载（首次运行从百度CDN下载并缓存）",
+        "cache_dir": "./data",
+        "train_samples": 60000,
+        "test_samples": 10000,
+        "num_classes": 10,
+        "input_shape": [
+          1,
+          28,
+          28
+        ],
+        "batch_size": 128,
+        "transform": "ToTensor + Normalize(mean=0.1307, std=0.3081)"
+      },
+      "log_rows": [],
+      "final": {},
+      "dims": {},
+      "age_days": 0.0,
+      "total_bytes": 1280,
+      "by_cat": {
+        "weights": 0,
+        "logs": 904,
+        "images": 0,
+        "json": 376,
+        "other": 0
+      },
+      "human_size": "1.2 KB"
+    }
+  ],
+  "source": {
+    "root": "/Users/leechiann/.cache/paddle/dataset/mnist",
+    "searched": [
+      "/Volumes/LCA_SSD/课程/大数据综合实训/handwriting_recognition/data",
+      "/Users/leechiann/.cache/paddle/dataset/mnist"
+    ],
+    "files": [
+      {
+        "name": "train-images-idx3-ubyte.gz",
+        "split": "train",
+        "path": "/Users/leechiann/.cache/paddle/dataset/mnist/train-images-idx3-ubyte.gz",
+        "exists": true,
+        "size": 9912422,
+        "mtime": "2026-09-07 21:42:12",
+        "mtime_ts": 1788788532.4152694,
+        "abs": "/Users/leechiann/.cache/paddle/dataset/mnist/train-images-idx3-ubyte.gz",
+        "idx": {
+          "magic": 2051,
+          "count": 60000,
+          "rows": 28,
+          "cols": 28,
+          "declared": 47040000,
+          "actual": 47040000,
+          "ok": true
+        },
+        "md5": "f68b3c2dcbeaaa9fbdd348bbdeb94873",
+        "baseline_md5": "f68b3c2dcbeaaa9fbdd348bbdeb94873",
+        "drift": false
+      },
+      {
+        "name": "train-labels-idx1-ubyte.gz",
+        "split": "train",
+        "path": "/Users/leechiann/.cache/paddle/dataset/mnist/train-labels-idx1-ubyte.gz",
+        "exists": true,
+        "size": 28881,
+        "mtime": "2026-09-07 21:42:12",
+        "mtime_ts": 1788788532.6185575,
+        "abs": "/Users/leechiann/.cache/paddle/dataset/mnist/train-labels-idx1-ubyte.gz",
+        "idx": {
+          "magic": 2049,
+          "count": 60000,
+          "rows": null,
+          "cols": null,
+          "declared": 60000,
+          "actual": 60000,
+          "ok": true
+        },
+        "md5": "d53e105ee54ea40749a09fcbcd1e9432",
+        "baseline_md5": "d53e105ee54ea40749a09fcbcd1e9432",
+        "drift": false
+      },
+      {
+        "name": "t10k-images-idx3-ubyte.gz",
+        "split": "test",
+        "path": "/Users/leechiann/.cache/paddle/dataset/mnist/t10k-images-idx3-ubyte.gz",
+        "exists": true,
+        "size": 1648877,
+        "mtime": "2026-09-07 21:42:14",
+        "mtime_ts": 1788788534.4289286,
+        "abs": "/Users/leechiann/.cache/paddle/dataset/mnist/t10k-images-idx3-ubyte.gz",
+        "idx": {
+          "magic": 2051,
+          "count": 10000,
+          "rows": 28,
+          "cols": 28,
+          "declared": 7840000,
+          "actual": 7840000,
+          "ok": true
+        },
+        "md5": "9fb629c4189551a2d022fa330f9573f3",
+        "baseline_md5": "9fb629c4189551a2d022fa330f9573f3",
+        "drift": false
+      },
+      {
+        "name": "t10k-labels-idx1-ubyte.gz",
+        "split": "test",
+        "path": "/Users/leechiann/.cache/paddle/dataset/mnist/t10k-labels-idx1-ubyte.gz",
+        "exists": true,
+        "size": 4542,
+        "mtime": "2026-09-07 21:42:14",
+        "mtime_ts": 1788788534.6442487,
+        "abs": "/Users/leechiann/.cache/paddle/dataset/mnist/t10k-labels-idx1-ubyte.gz",
+        "idx": {
+          "magic": 2049,
+          "count": 10000,
+          "rows": null,
+          "cols": null,
+          "declared": 10000,
+          "actual": 10000,
+          "ok": true
+        },
+        "md5": "ec29112dd5afa0611ce80d1b7f02629c",
+        "baseline_md5": "ec29112dd5afa0611ce80d1b7f02629c",
+        "drift": false
+      }
+    ],
+    "total_bytes": 11594722,
+    "fingerprint_path": "/Volumes/LCA_SSD/课程/大数据综合实训/handwriting_recognition/outputs/ops/data_fingerprint.json",
+    "ok_count": 4
+  },
+  "inference": {
+    "exists": false,
+    "path": "/Volumes/LCA_SSD/课程/大数据综合实训/handwriting_recognition/outputs/examples/inference_results.json"
+  },
+  "custom": {
+    "image_dir": "/Volumes/LCA_SSD/课程/大数据综合实训/handwriting_recognition/inputs",
+    "out_dir": "/Volumes/LCA_SSD/课程/大数据综合实训/handwriting_recognition/outputs/custom",
+    "results_path": "/Volumes/LCA_SSD/课程/大数据综合实训/handwriting_recognition/outputs/custom/custom_results.json",
+    "dir_exists": true,
+    "pngs": [
+      {
+        "name": "3.png",
+        "size": 100,
+        "mtime": "2026-09-07 21:43:11"
+      },
+      {
+        "name": "7.png",
+        "size": 86,
+        "mtime": "2026-09-07 21:43:11"
+      },
+      {
+        "name": "9.png",
+        "size": 100,
+        "mtime": "2026-09-07 21:43:11"
+      }
+    ],
+    "wrong_ext": [],
+    "exists": false,
+    "total_bytes": 286,
+    "out_bytes": 0,
+    "num_images": null,
+    "succeeded": null,
+    "failed": [],
+    "unlabeled": null,
+    "accuracy": null,
+    "run_name": null,
+    "model_type": null,
+    "model_missing": null,
+    "generated_at": null,
+    "orphans": [],
+    "by_file": {}
+  },
+  "storage": {
+    "runs_bytes": 1280,
+    "source_bytes": 11594722,
+    "areas": {
+      "logs": 1280,
+      "data": 11594722,
+      "outputs_examples": 0,
+      "outputs_custom": 0,
+      "inputs": 286,
+      "ops": 184020
+    },
+    "total_bytes": 11780308,
+    "by_cat": {
+      "weights": 0,
+      "logs": 904,
+      "images": 0,
+      "json": 376,
+      "other": 0
+    }
+  },
+  "issues": [
+    {
+      "code": "C1",
+      "dim": "completeness",
+      "level": "ERROR",
+      "target": "demo/model.pdparams",
+      "message": "缺少最终模型权重（model.pdparams）",
+      "suggestion": "重跑该 run 的训练；若是中断所致请勿复用半成品 run 目录"
+    },
+    {
+      "code": "C1",
+      "dim": "completeness",
+      "level": "ERROR",
+      "target": "demo/best_model.pdparams",
+      "message": "缺少最佳模型权重（best_model.pdparams）",
+      "suggestion": "重跑该 run 的训练；若是中断所致请勿复用半成品 run 目录"
+    },
+    {
+      "code": "C1",
+      "dim": "completeness",
+      "level": "ERROR",
+      "target": "demo/config.json",
+      "message": "缺少参数快照（config.json）",
+      "suggestion": "重跑该 run 的训练；若是中断所致请勿复用半成品 run 目录"
+    },
+    {
+      "code": "C1",
+      "dim": "completeness",
+      "level": "WARN",
+      "target": "demo/history.json",
+      "message": "缺少训练过程数据（history.json）",
+      "suggestion": "重跑该 run 的训练；若是中断所致请勿复用半成品 run 目录"
+    },
+    {
+      "code": "C1",
+      "dim": "completeness",
+      "level": "WARN",
+      "target": "demo/curves.png",
+      "message": "缺少训练曲线图（curves.png）",
+      "suggestion": "重跑该 run 的训练；若是中断所致请勿复用半成品 run 目录"
+    },
+    {
+      "code": "C3",
+      "dim": "completeness",
+      "level": "WARN",
+      "target": "/Volumes/LCA_SSD/课程/大数据综合实训/handwriting_recognition/outputs/examples/inference_results.json",
+      "message": "尚无推理成果 inference_results.json",
+      "suggestion": "运行：python main.py --mode inference --run_name <run名>"
+    },
+    {
+      "code": "U5",
+      "dim": "completeness",
+      "level": "WARN",
+      "target": "/Volumes/LCA_SSD/课程/大数据综合实训/handwriting_recognition/outputs/custom/custom_results.json",
+      "message": "已有 3 张输入图但没有 custom_results.json",
+      "suggestion": "运行：python main.py --mode custom --run_name <run名>"
+    },
+    {
+      "code": "S10",
+      "dim": "source_health",
+      "level": "WARN",
+      "target": "/Users/leechiann/.cache/paddle/dataset/mnist",
+      "message": "实际数据目录为 /Users/leechiann/.cache/paddle/dataset/mnist，与 config.data_dir=./data 不一致（说明当时触发了退回 Paddle 默认缓存的降级分支）",
+      "suggestion": "在报告中注明降级；如需固定路径请补齐 config.data_dir 下的文件"
+    },
+    {
+      "code": "N13",
+      "dim": "traceability",
+      "level": "WARN",
+      "target": "demo/dataset_record.json",
+      "message": "留档声明数据目录 ./data，实际命中 /Users/leechiann/.cache/paddle/dataset/mnist",
+      "suggestion": "留档与事实不符，追溯时以实际为准"
+    },
+    {
+      "code": "T3",
+      "dim": "traceability",
+      "level": "INFO",
+      "target": "demo",
+      "message": "无 best_model.pdparams，inference 模式将回退用末轮权重",
+      "suggestion": "推理结果可能与训练报告里的 val_acc 不一致"
+    }
+  ]
+}
