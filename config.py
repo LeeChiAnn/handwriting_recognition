@@ -42,6 +42,9 @@ class Config:
     retention_days: int = 14          # run 产物保留期（超期只提示归档，绝不自动删除）
     refresh_baseline: bool = False    # True 时重建数据集指纹基线（--refresh_baseline）
 
+    # ===== 离线成果包（--mode report 使用）=====
+    embed_images: bool = True         # True=图片 base64 内嵌，单文件可下载；False=相对路径引用
+
     def to_dict(self):
         return asdict(self)
 
@@ -49,10 +52,13 @@ class Config:
 def build_config_from_args(argv=None):
     """解析命令行参数，覆盖默认值，返回 (mode, cfg)。"""
     p = argparse.ArgumentParser(description="手写数字识别实训项目 (MNIST)")
-    p.add_argument("--mode", choices=["train", "inference", "demo", "ops", "custom"], default="train",
+    p.add_argument("--mode", choices=["train", "inference", "demo", "ops", "custom", "eval", "report"],
+                   default="train",
                    help="train=训练; inference=推理示例; demo=快速演示(训练+推理); "
                         "ops=数据运维巡检(只读扫描 logs/ 与 data/ 产物并出看板); "
-                        "custom=识别 --image_dir 里用户自己的 PNG(产物写 outputs/custom/)")
+                        "custom=识别 --image_dir 里用户自己的 PNG(产物写 outputs/custom/); "
+                        "eval=全测试集验证模型效果(混淆矩阵/每类P·R·F1，需 paddle); "
+                        "report=生成三份可下载的离线成果 HTML(不需 paddle)")
     p.add_argument("--model_type", default=None, help="mlp / lenet / cnn")
     p.add_argument("--lr", type=float, default=None, help="学习率")
     p.add_argument("--epochs", type=int, default=None, help="训练轮数")
@@ -69,6 +75,9 @@ def build_config_from_args(argv=None):
     p.add_argument("--retention_days", type=int, default=None, help="run 产物保留天数")
     p.add_argument("--refresh_baseline", action="store_true",
                    help="重建数据集指纹基线（数据确认无损后重新立基线用）")
+    # ---- 离线成果包参数（--mode report）----
+    p.add_argument("--no_embed", action="store_false", dest="embed_images", default=True,
+                   help="成果 HTML 不内嵌图片，改走相对路径（文件小很多，但必须整目录一起拷走）")
     args = p.parse_args(argv)
 
     cfg = Config()
@@ -80,7 +89,8 @@ def build_config_from_args(argv=None):
         else:
             setattr(cfg, key, val)
 
-    if cfg.run_name is None and args.mode != "ops":
-        # ops 模式不自动编 run 名：留 None 代表“巡检 logs/ 下全部 run”
+    if cfg.run_name is None and args.mode not in ("ops", "report", "eval"):
+        # ops / report 不自动编名：留 None 代表“覆盖 logs/ 下全部 run”；
+        # eval 必须用已有权重的 run，编一个不存在的名字只会报错，交给 do_eval 去识别。
         cfg.run_name = "run_" + time.strftime("%Y%m%d_%H%M%S")
     return args.mode, cfg

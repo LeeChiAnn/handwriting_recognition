@@ -16,45 +16,8 @@ import math
 import os
 
 from data_ops import DIMENSIONS, ERROR, INFO, LEVEL_COLOR, MNIST_FILES, WARN, human_bytes
-
-
-def _esc(text):
-    return _html.escape(str(text), quote=True)
-
-
-def _score_color(score):
-    if score >= 90:
-        return "#12a06b"
-    if score >= 75:
-        return "#3b82f6"
-    if score >= 60:
-        return "#f5a623"
-    return "#e5484d"
-
-
-_CSS = """
-*{box-sizing:border-box}body{margin:0;padding:24px;background:#f5f7fa;\
-font-family:-apple-system,"PingFang SC","Microsoft YaHei",Helvetica,Arial,sans-serif;color:#1a1d24}\
-h1{font-size:20px;margin:0 0 4px}h2{font-size:15px;margin:24px 0 10px;color:#2c3140;\
-border-left:4px solid #6366f1;padding-left:9px}.sub{color:#68707f;font-size:12px;margin-bottom:18px}\
-.wrap{max-width:1120px;margin:0 auto}.card{background:#fff;border:1px solid #e6eaf0;\
-border-radius:12px;padding:16px 18px;margin-bottom:14px;box-shadow:0 1px 2px rgba(16,24,40,.04)}\
-.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(330px,1fr));gap:14px}\
-.kpis{display:grid;grid-template-columns:repeat(auto-fit,minmax(112px,1fr));gap:10px;margin-top:10px}\
-.kpi{background:#f8fafc;border:1px solid #e6eaf0;border-radius:10px;padding:9px 11px}\
-.kpi b{display:block;font-size:20px;margin-top:2px}.kpi span{font-size:11px;color:#68707f}\
-.chip{display:inline-block;padding:2px 9px;border-radius:999px;font-size:11px;font-weight:600;color:#fff}\
-table{width:100%;border-collapse:collapse;font-size:12px}th,td{padding:7px 8px;\
-border-bottom:1px solid #eef1f5;text-align:left;vertical-align:middle}th{background:#f8fafc;\
-color:#4b5568;font-weight:600;white-space:nowrap}td.num{text-align:right;font-variant-numeric:tabular-nums}\
-code{background:#f2f4f8;padding:1px 5px;border-radius:4px;font-size:11px;word-break:break-all}\
-.muted{color:#9aa3b2}.ok{color:#12805c}.bad{color:#c62f38}.warned{color:#b47109}\
-.cell-ok{background:#e7f6ef}.cell-bad{background:#fdeceb}\
-.dimrow{display:flex;align-items:center;gap:10px;margin:7px 0;font-size:12px}\
-.dimrow span{width:80px;color:#4b5568}.dimrow b{width:34px;text-align:right}\
-.track{flex:1;height:9px;background:#eef1f5;border-radius:6px;overflow:hidden}\
-.fill{height:100%;border-radius:6px}footer{color:#8d95a3;font-size:11px;text-align:center;margin:18px 0}
-"""
+from html_kit import CSS as _CSS
+from html_kit import esc as _esc, score_color as _score_color, shots
 
 
 def svg_gauge(score):
@@ -68,8 +31,8 @@ def svg_gauge(score):
         '<path d="%s" fill="none" stroke="#e9edf3" stroke-width="15" stroke-linecap="round"/>'
         '<path d="%s" fill="none" stroke="%s" stroke-width="15" stroke-linecap="round" '
         'stroke-dasharray="%.1f %.1f"/>'
-        '<text x="100" y="93" text-anchor="middle" font-size="34" font-weight="700" '
-        'fill="#1a1d24">%.0f</text>'
+        '<text x="100" y="93" text-anchor="middle" font-size="30" font-weight="700" '
+        'fill="#1a1d24">%.1f</text>'
         '<text x="100" y="114" text-anchor="middle" font-size="11" fill="#68707f">'
         "HEALTH SCORE / 100</text></svg>"
     ) % (d, d, _score_color(score), arc * frac, arc, score)
@@ -102,12 +65,13 @@ def svg_stacked_storage(runs, cats, colors, width=520):
         p.append('<text x="%.1f" y="%d" font-size="11" fill="#666">%s</text>'
                  % (x + 6, y + 17, human_bytes(r["total_bytes"])))
         y += rowh + gap
-    lx = left
+    lx = 10
+    step = max(70.0, (width - 20) / len(cats))
     for cat in cats:
-        p.append('<rect x="%d" y="%d" width="11" height="11" rx="2" fill="%s"/>'
-                 '<text x="%d" y="%d" font-size="10" fill="#666">%s</text>'
+        p.append('<rect x="%.0f" y="%d" width="11" height="11" rx="2" fill="%s"/>'
+                 '<text x="%.0f" y="%d" font-size="10" fill="#666">%s</text>'
                  % (lx, height - 20, colors[cat], lx + 15, height - 11, _esc(cat)))
-        lx += 96
+        lx += step
     p.append("</svg>")
     return "".join(p)
 
@@ -176,8 +140,11 @@ def _how_to_fix(msg):
     return "见报因；可用 python custom_input.py inputs 自检"
 
 
-def render_html_dashboard(rep):
-    """把巡检报告渲染成一页自包含 HTML（返回字符串）。"""
+def render_html_dashboard(rep, embed=True):
+    """把巡检报告渲染成一页自包含 HTML（返回字符串）。
+
+    embed=True 时把图像成果 base64 内嵌，学生只下载这一个文件也能看到图；
+    embed=False 改走相对路径（体积小，但得整目录拷走）。"""
     s, meta, src = rep["summary"], rep["meta"], rep["source"]
     cats = ["weights", "logs", "images", "json", "other"]
     colors = {"weights": "#6366f1", "logs": "#10b981", "images": "#f59e0b",
@@ -371,13 +338,29 @@ def render_html_dashboard(rep):
             ch.append("</table>")
     custom_html = "".join(ch)
 
+    # ---- 图像成果：缺图时 shots 会显式标“未生成”，这本身就是运维信息
+    img_items = [(os.path.join(meta["ops_dir"], "dashboard.png"),
+                  "dashboard.png 四联看板（本页的静态图版）")]
+    for r in rep["runs"]:
+        img_items.append((os.path.join(r["path"], "curves.png"),
+                          "logs/%s/curves.png 训练曲线" % r["name"]))
+    img_items += [(os.path.join(meta["output_dir"], "examples", "predictions.png"),
+                   "outputs/examples/predictions.png 示例识别拼图"),
+                  (os.path.join(meta["output_dir"], "custom", "predictions_custom.png"),
+                   "outputs/custom/predictions_custom.png 自提图识别拼图")]
+    images_html = shots(img_items, embed=embed, base_dir=meta["ops_dir"])
+
+    # 入口页存在才给返回按钮：单独下载本页时不能留一个点不开的死链
+    nav = ('<a class="btn" href="../reports/index.html">← 返回成果包入口</a>'
+           if os.path.exists(os.path.join(meta["output_dir"], "reports", "index.html")) else "")
+
     return (
         '<!doctype html><html lang="zh"><head><meta charset="utf-8">'
         '<meta name="viewport" content="width=device-width,initial-scale=1">'
         "<title>手写识别项目 · 数据运维看板</title><style>%s</style></head><body><div class=\"wrap\">"
         "<h1>数据运维巡检看板 · DataOps Audit</h1>"
         '<div class="sub">生成于 %s ｜ 巡检范围 <code>%s</code> · <code>%s</code> · <code>%s</code>'
-        "｜ run 范围：%s ｜ 保留期 %d 天</div>"
+        "｜ run 范围：%s ｜ 保留期 %d 天</div>%s"
         '<div class="grid">'
         '<div class="card" style="text-align:center"><h2 style="margin-top:0">健康度总分</h2>%s'
         '<div style="margin:8px 0 2px">%s</div><div>%s</div><div class="kpis">%s</div></div>'
@@ -401,17 +384,21 @@ def render_html_dashboard(rep):
         "<table><tr><th>级别</th><th>编号</th><th>维度</th><th>对象</th><th>问题</th>"
         "<th>建议动作</th></tr>%s</table></div>"
         '<div class="card"><h2 style="margin-top:0">整改优先级（先看这 8 条）</h2><ol>%s</ol></div>'
+        '<div class="card"><h2 style="margin-top:0">图像成果（%s）</h2>%s'
+        '<div class="muted" style="font-size:11px;margin-top:6px">'
+        "图片已内嵌在本页里，所以只下载这一个 HTML 也能看到图；若显示“未生成”，按上方整改优先级补跑即可。</div></div>"
         "<footer>由 data_ops.py 自动生成 · 只读巡检 · "
         "配套课程《大数据综合实训 · 深度学习实训》</footer></div></body></html>"
         % (_CSS, _esc(meta["generated_at"]), _esc(meta["log_dir"]), _esc(meta["data_dir"]),
-           _esc(meta["output_dir"]), _esc(meta["run_name_filter"]), meta["retention_days"],
+           _esc(meta["output_dir"]), _esc(meta["run_name_filter"]), meta["retention_days"], nav,
            svg_gauge(rep["score"]), _esc(rep["verdict"]), chips, kpi,
            "".join(dims_html),
            svg_stacked_storage(rep["runs"], cats, colors), areas_html,
            svg_acc_bars(rep["runs"]),
            _esc(src["root"] or "未找到"), "".join(src_rows), _esc(src["fingerprint_path"]),
            "".join(matrix), "".join(metrics), inf_line, custom_html,
-           len(rep["issues"]), "".join(issue_rows), actions)
+           len(rep["issues"]), "".join(issue_rows), actions,
+           "base64 内嵌" if embed else "相对路径引用", images_html)
     )
 
 

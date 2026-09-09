@@ -22,6 +22,7 @@ def evaluate(model, loader, criterion):
     total_loss, correct, total = 0.0, 0, 0
     with paddle.no_grad():
         for batch_id, (x, y) in enumerate(loader):
+            y = y.reshape([-1])                                           # 标签统一展平成 [N]，见训练循环同处注释
             logits = model(x)
             loss = criterion(logits, y)
             total_loss += loss.item()                                    # 0-d 张量必须用 .item()
@@ -64,6 +65,10 @@ def train(config, logger, log_path=None):
         train_loss, train_correct, train_total = 0.0, 0, 0
         t0 = time.time()
         for batch_id, (x, y) in enumerate(train_loader):
+            # Paddle 的 MNIST 每条标签是长度 1 的数组，批处理后 y 形状为 [N,1]；
+            # 若不展平，preds[N] == y[N,1] 会广播成 [N,N] 矩阵，准确率统计会虚高到
+            # 约 batch_size/10（如 128 批 → 12.8），看起来像"模型只有 13% 准确率"。
+            y = y.reshape([-1])                                           # [N,1] -> [N]
             logits = model(x)
             loss = criterion(logits, y)
             loss.backward()

@@ -615,11 +615,107 @@ def audit_custom_inputs(cfg, runs, issues):
 
 # ---------------------------------------------------------------- 汇总与评分
 
+def audit_reports(cfg, runs, issues):
+    """体检「模型效果验证 + 离线成果包」这两类产物：有没有、引哪次训练、还新不新。"""
+    out_root = os.path.abspath(cfg.output_dir)
+    eval_path = os.path.join(out_root, "eval", "eval_results.json")
+    rep_dir = os.path.join(out_root, "reports")
+    info = {"eval": {"exists": os.path.exists(eval_path), "path": eval_path},
+            "report_dir": rep_dir, "reports": {}}
+
+    if info["eval"]["exists"]:
+        ev, err = _load_json(eval_path)
+        if err:
+            issues.append(_issue("E4", "consistency", ERROR, eval_path,
+                                 f"验证结果无法解析：{err}", "重跑 python main.py --mode eval"))
+        else:
+            o = ev.get("overall") or {}
+            ds = ev.get("dataset") or {}
+            info["eval"].update({"run_name": ev.get("run_name"), "model_type": ev.get("model_type"),
+                                 "generated_at": ev.get("generated_at"), "accuracy": o.get("accuracy"),
+                                 "macro_f1": o.get("macro_f1"), "num_samples": ds.get("num_samples"),
+                                 "errors_total": (ev.get("errors") or {}).get("total"),
+                                 "model_path": ev.get("model_path")})
+            # ① 引用完整性：run 与权重都得还在
+            target = next((r for r in runs if r["name"] == ev.get("run_name")), None)
+            if not target:
+                issues.append(_issue("E2", "traceability", ERROR, eval_path,
+                                     f"验证结果引用的 run_name={ev.get('run_name')} 在 logs/ 中不存在",
+                                     "模型或日志已被清理/改名，这份验证无法追溯，重跑训练与验证"))
+            mp = ev.get("model_path")
+            if mp and not os.path.exists(mp):
+                issues.append(_issue("E3", "traceability", ERROR, eval_path,
+                                     f"验证所用权重已丢失：{mp}",
+                                     "成果无法复现，确认是否误删 logs/<run>/*.pdparams"))
+            # ② 自洽性：混淆矩阵对角和/总数 必须等于宣称的准确率（防手工改报告）
+            cm = ev.get("confusion")
+            n = ds.get("num_samples")
+            if cm and n:
+                tot = sum(sum(row) for row in cm)
+                acc = sum(row[i] for i, row in enumerate(cm)) / max(tot, 1)
+                if abs(acc - (o.get("accuracy") or 0)) > 0.005 or tot != n:
+                    issues.append(_issue("E6", "consistency", ERROR, eval_path,
+                                         f"混淆矩阵与宣称准确率不符（矩阵合计 {tot} vs 样本 {n}；"
+                                         f"算得 {acc:.4f} vs 记录 {o.get('accuracy')}）",
+                                         "结果文件可能被手改过，重跑 --mode eval 以磁盘为准"))
+            # ③ 与训练记录对账
+            va = (target.get("final") or {}).get("val_acc") if target else None
+            if va and o.get("accuracy") is not None and abs(o["accuracy"] - va) > 0.05:
+                issues.append(_issue("E5", "consistency", WARN, eval_path,
+                                     f"测试集实测 {o['accuracy']} 与训练记录 val_acc {va} 相差 >0.05",
+                                     "确认权重与日志出自同一次训练，并排查预处理是否改动过数据"))
+    else:
+        issues.append(_issue("E1", "completeness", WARN, eval_path,
+                             "从未做过全测试集验证（缺 outputs/eval/eval_results.json）",
+                             "python main.py --mode eval --run_name <run名>（需 paddle，请在 AI Studio 上跑）"))
+
+    # 成果包：三份 HTML 齐不齐、是否比上游数据新
+    # 上游基准 = 成果包真正引用的那些“事实”文件的最新修改时间。
+    # 故意不算 ops_report.json：巡检是只读的、每轮都会重写它，把它当上游会变成
+    # “只要跑过一次 ops，成果包就全过期”且无法修掉的死循环告警。
+    newest = max(_newest_mtime(d) for d in (
+        os.path.abspath(cfg.log_dir),
+        os.path.abspath(os.path.expanduser(getattr(cfg, "image_dir", None) or "./inputs")),
+        os.path.join(out_root, "eval"), os.path.join(out_root, "examples"),
+        os.path.join(out_root, "custom")))
+    stale = []
+    for fname in ("index.html", "model_report.html", "lab_archive.html"):
+        p = os.path.join(rep_dir, fname)
+        st = {"exists": os.path.exists(p), "path": p}
+        if st["exists"]:
+            st["size"] = os.path.getsize(p)
+            st["mtime"] = time.strftime("%Y-%m-%d %H:%M:%S", time.localtime(os.path.getmtime(p)))
+            if os.path.getmtime(p) < newest:
+                stale.append(fname)
+        else:
+            issues.append(_issue("P1", "completeness", WARN, p,
+                                 f"离线成果包缺 {fname}", "python main.py --mode report（不需要 paddle）"))
+        info["reports"][fname] = st
+    if stale:  # 归并成一条告警：本质是同一个动作（重跑 report）能修完，不必按份数重复扣分
+        issues.append(_issue("P2", "storage_gov", WARN, rep_dir,
+                             f"成果包 {len(stale)} 份比上游数据旧（{', '.join(stale)}）："
+                             "巡检/验证之后没重新生成 HTML",
+                             "python main.py --mode report"))
+    return info
+
+
 def _dir_bytes(path):
     """一个目录下直接子文件的体积合计（不算入子目录，用于分区域账）。"""
     if not os.path.isdir(path):
         return 0
     return sum(os.path.getsize(p) for p in glob.glob(os.path.join(path, "*")) if os.path.isfile(p))
+
+
+def _newest_mtime(root):
+    """递归取一个目录下最新的文件修改时间（目录不存在返回 0）。"""
+    newest = 0.0
+    for dirpath, _, filenames in os.walk(root):
+        for fn in filenames:
+            try:
+                newest = max(newest, os.path.getmtime(os.path.join(dirpath, fn)))
+            except OSError:
+                continue
+    return newest
 
 
 def _score_dimensions(issues):
@@ -697,6 +793,7 @@ def collect_report(cfg, logger):
                              "运行：python main.py --mode inference --run_name <run名>"))
 
     custom = audit_custom_inputs(cfg, runs, issues)
+    reports = audit_reports(cfg, runs, issues)
 
     # 分区域存储账：把项目产物按区域切开，回答「磁盘被哪一类产物吃掉了」
     examples_dir = os.path.join(os.path.abspath(cfg.output_dir), "examples")
@@ -705,6 +802,8 @@ def collect_report(cfg, logger):
         "data": source["total_bytes"],
         "outputs_examples": _dir_bytes(examples_dir),
         "outputs_custom": custom["out_bytes"],
+        "outputs_eval": _dir_bytes(os.path.join(os.path.abspath(cfg.output_dir), "eval")),
+        "outputs_reports": _dir_bytes(reports["report_dir"]),
         "inputs": custom["total_bytes"],
         "ops": _dir_bytes(os.path.abspath(cfg.ops_dir)),
     }
@@ -738,6 +837,7 @@ def collect_report(cfg, logger):
                     "best_run": best["name"] if best else None,
                     "best_val_acc": best["final"]["best_val_acc"] if best else None},
         "runs": runs, "source": source, "inference": inference, "custom": custom,
+        "reports": reports,
         "storage": {"runs_bytes": sum(r["total_bytes"] for r in runs),
                     "source_bytes": source["total_bytes"],
                     "areas": areas,
@@ -854,7 +954,33 @@ def write_markdown_report(rep, path):
                 L.append(f"| `{f['file']}` | {f['error']} | {fix(f['error'])} |")
             L.append("")
 
-    L += ["## 7. 告警清单（按级别）", "",
+    rep_info = rep.get("reports") or {}
+    ev = rep_info.get("eval") or {}
+    L += ["## 7. 模型效果验证与离线成果包", ""]
+    if ev.get("exists"):
+        L += [f"- 验证结果：`{ev['path']}`（{human_bytes(os.path.getsize(ev['path'])) if os.path.exists(ev['path']) else '-'}）",
+              f"- 引用 run：`{ev.get('run_name')}`　模型结构：{ev.get('model_type')}　生成于 {ev.get('generated_at')}",
+              f"- 测试集实测：**准确率 {ev.get('accuracy')}　macro-F1 {ev.get('macro_f1')}**　"
+              f"样本 {ev.get('num_samples')}　错分 {ev.get('errors_total')}",
+              f"- 所用权重：`{ev.get('model_path')}`"
+              f"（{'❌ 已丢失' if ev.get('model_path') and not os.path.exists(ev['model_path']) else '✅ 可达'}）", ""]
+    else:
+        L += ["- ❌ 尚无全测试集验证结果，模型效果只能靠训练日志的 val_acc 间接推断", ""]
+    L += ["### 7.1 可下载的离线成果 HTML", "",
+          "| 成果 | 用途 | 状态 | 体积 | 生成时间 |", "|---|---|---|---|---|"]
+    report_desc = {
+        "index.html": "入口页：三张卡片跳转到下面两份 + 运维看板",
+        "model_report.html": "模型效果验证：混淆矩阵 / 每类 P·R·F1 / 置信度 / 错分图集",
+        "lab_archive.html": "实验档案袋：历次 run 参数对比、曲线、全部图像成果",
+    }
+    for fname, st in (rep_info.get("reports") or {}).items():
+        L.append(f"| `{fname}` | {report_desc.get(fname, '')} | "
+                 f"{'✅' if st.get('exists') else '❌ 缺'} | "
+                 f"{human_bytes(st.get('size')) if st.get('size') else '-'} | {st.get('mtime') or '-'} |")
+    L += ["", f"> 成果包目录：`{rep_info.get('report_dir')}`；每份都是单文件自包含（图片已 base64 内嵌），"
+          "下载任意一份到本地双击即可观看。", ""]
+
+    L += ["## 8. 告警清单（按级别）", "",
           "| 级别 | 编号 | 维度 | 对象 | 问题 | 建议动作 |", "|---|---|---|---|---|---|"]
     dim_cn = dict((k, lab) for k, lab, _ in DIMENSIONS)
     for it in rep["issues"]:
@@ -863,7 +989,7 @@ def write_markdown_report(rep, path):
     if not rep["issues"]:
         L.append("| - | - | - | - | 无告警，全部通过 | - |")
 
-    L += ["", "## 8. 整改优先级", ""]
+    L += ["", "## 9. 整改优先级", ""]
     todo = [i for i in rep["issues"] if i["level"] == ERROR] + [i for i in rep["issues"] if i["level"] == WARN]
     if not todo:
         L.append("无必须整改项。可继续做参数对比实验。")
@@ -910,10 +1036,6 @@ def run_ops_audit(cfg, logger=None):
     with open(json_path, "w", encoding="utf-8") as f:
         json.dump(report, f, ensure_ascii=False, indent=2)
     md_path = write_markdown_report(report, os.path.join(ops_dir, "ops_report.md"))
-    html_path = os.path.join(ops_dir, "dashboard.html")
-    from ops_dashboard import render_html_dashboard
-    with open(html_path, "w", encoding="utf-8") as f:
-        f.write(render_html_dashboard(report))
 
     # PNG 看板交给 visualize.py 统一出图；无 matplotlib 时自动跳过，不影响其他成果
     png_path = os.path.join(ops_dir, "dashboard.png")
@@ -924,6 +1046,12 @@ def run_ops_audit(cfg, logger=None):
         logger.info("[提示] 未能生成 PNG 看板（%s：%s），HTML/Markdown 看板不受影响",
                     type(e).__name__, e)
         made = None
+
+    # HTML 必须放在 PNG 之后写：dashboard.png 会被 base64 内嵌进 HTML，先写就会嵌进上一轮的旧图
+    html_path = os.path.join(ops_dir, "dashboard.html")
+    from ops_dashboard import render_html_dashboard
+    with open(html_path, "w", encoding="utf-8") as f:
+        f.write(render_html_dashboard(report, embed=getattr(cfg, "embed_images", True)))
 
     for it in report["issues"]:
         if it["level"] == ERROR:

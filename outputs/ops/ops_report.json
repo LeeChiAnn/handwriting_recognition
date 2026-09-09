@@ -1,7 +1,7 @@
 {
   "meta": {
     "tool": "data_ops.py 数据运维巡检",
-    "generated_at": "2026-09-07 21:59:37",
+    "generated_at": "2026-09-09 08:45:44",
     "project_root": "/Volumes/LCA_SSD/课程/大数据综合实训/handwriting_recognition",
     "run_name_filter": "全部 run（logs/ 下所有子目录）",
     "log_dir": "/Volumes/LCA_SSD/课程/大数据综合实训/handwriting_recognition/logs",
@@ -24,9 +24,9 @@
   "summary": {
     "runs": 1,
     "error": 3,
-    "warn": 6,
+    "warn": 7,
     "info": 1,
-    "issues": 10,
+    "issues": 11,
     "best_run": null,
     "best_val_acc": null
   },
@@ -81,7 +81,7 @@
       "log_rows": [],
       "final": {},
       "dims": {},
-      "age_days": 0.0,
+      "age_days": 1.5,
       "total_bytes": 1280,
       "by_cat": {
         "weights": 0,
@@ -235,6 +235,33 @@
     "orphans": [],
     "by_file": {}
   },
+  "reports": {
+    "eval": {
+      "exists": false,
+      "path": "/Volumes/LCA_SSD/课程/大数据综合实训/handwriting_recognition/outputs/eval/eval_results.json"
+    },
+    "report_dir": "/Volumes/LCA_SSD/课程/大数据综合实训/handwriting_recognition/outputs/reports",
+    "reports": {
+      "index.html": {
+        "exists": true,
+        "path": "/Volumes/LCA_SSD/课程/大数据综合实训/handwriting_recognition/outputs/reports/index.html",
+        "size": 5900,
+        "mtime": "2026-09-09 08:26:05"
+      },
+      "model_report.html": {
+        "exists": true,
+        "path": "/Volumes/LCA_SSD/课程/大数据综合实训/handwriting_recognition/outputs/reports/model_report.html",
+        "size": 4465,
+        "mtime": "2026-09-09 08:26:05"
+      },
+      "lab_archive.html": {
+        "exists": true,
+        "path": "/Volumes/LCA_SSD/课程/大数据综合实训/handwriting_recognition/outputs/reports/lab_archive.html",
+        "size": 205403,
+        "mtime": "2026-09-09 08:26:05"
+      }
+    }
+  },
   "storage": {
     "runs_bytes": 1280,
     "source_bytes": 11594722,
@@ -243,10 +270,12 @@
       "data": 11594722,
       "outputs_examples": 0,
       "outputs_custom": 0,
+      "outputs_eval": 0,
+      "outputs_reports": 427649,
       "inputs": 286,
-      "ops": 184004
+      "ops": 377009
     },
-    "total_bytes": 11780292,
+    "total_bytes": 12400946,
     "by_cat": {
       "weights": 0,
       "logs": 904,
@@ -303,6 +332,14 @@
       "target": "/Volumes/LCA_SSD/课程/大数据综合实训/handwriting_recognition/outputs/examples/inference_results.json",
       "message": "尚无推理成果 inference_results.json",
       "suggestion": "运行：python main.py --mode inference --run_name <run名>"
+    },
+    {
+      "code": "E1",
+      "dim": "completeness",
+      "level": "WARN",
+      "target": "/Volumes/LCA_SSD/课程/大数据综合实训/handwriting_recognition/outputs/eval/eval_results.json",
+      "message": "从未做过全测试集验证（缺 outputs/eval/eval_results.json）",
+      "suggestion": "python main.py --mode eval --run_name <run名>（需 paddle，请在 AI Studio 上跑）"
     },
     {
       "code": "U5",

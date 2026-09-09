@@ -1,0 +1,14 @@
+[2026-09-09 08:26:05] INFO | ==== 数据运维巡检开始 ====
+[2026-09-09 08:26:05] INFO | 扫描范围：logs=/Volumes/LCA_SSD/课程/大数据综合实训/handwriting_recognition/logs  data=/Volumes/LCA_SSD/课程/大数据综合实训/handwriting_recognition/data  outputs=/Volumes/LCA_SSD/课程/大数据综合实训/handwriting_recognition/outputs
+[2026-09-09 08:26:05] INFO | 巡检完成：健康度 70.2（C）｜ERROR=3 WARN=7 INFO=1｜run 数=1
+[2026-09-09 08:26:05] ERROR | [C1] demo/model.pdparams | 缺少最终模型权重（model.pdparams）
+[2026-09-09 08:26:05] ERROR | [C1] demo/best_model.pdparams | 缺少最佳模型权重（best_model.pdparams）
+[2026-09-09 08:26:05] ERROR | [C1] demo/config.json | 缺少参数快照（config.json）
+[2026-09-09 08:26:05] INFO | 健康度 70.2/100（C）—— 及格：有明显缺项，交付前需整改
+[2026-09-09 08:26:05] INFO | ==== 巡检成果保存位置（绝对路径）====
+[2026-09-09 08:26:05] INFO |   结构化报告 -> /Volumes/LCA_SSD/课程/大数据综合实训/handwriting_recognition/outputs/ops/ops_report.json
+[2026-09-09 08:26:05] INFO |   可读巡检报告 -> /Volumes/LCA_SSD/课程/大数据综合实训/handwriting_recognition/outputs/ops/ops_report.md
+[2026-09-09 08:26:05] INFO |   交互看板（浏览器打开） -> /Volumes/LCA_SSD/课程/大数据综合实训/handwriting_recognition/outputs/ops/dashboard.html
+[2026-09-09 08:26:05] INFO |   四联看板图 -> /Volumes/LCA_SSD/课程/大数据综合实训/handwriting_recognition/outputs/ops/dashboard.png
+[2026-09-09 08:26:05] INFO |   本次巡检日志 -> /Volumes/LCA_SSD/课程/大数据综合实训/handwriting_recognition/outputs/ops/audit/ops_20260909_082605.log
+[2026-09-09 08:26:05] INFO |   数据指纹基线 -> /Volumes/LCA_SSD/课程/大数据综合实训/handwriting_recognition/outputs/ops/data_fingerprint.json
